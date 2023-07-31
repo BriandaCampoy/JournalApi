@@ -97,7 +97,7 @@ public class JournalController : ControllerBase
         {
             return Ok(journalService.GetByResearcher(id));
         }
-        catch (JournalNotFoundException ex)
+        catch (ResearcherNotFoundException ex)
         {
             _logger.LogError(ex, "Researcher not found.");
             return NotFound("Researcher not found.");
@@ -124,16 +124,20 @@ public class JournalController : ControllerBase
     [ProducesResponseType(500)]
     public IActionResult GetJournalDoc(Guid idJournal)
     {
-        string route = journalService.GetOne(idJournal).InternalUrl;
-        if (!System.IO.File.Exists(route))
-        {
-            return NotFound("File not found");
-        }
         try
         {
+            string route = journalService.GetOne(idJournal).InternalUrl;
+            if (!System.IO.File.Exists(route))
+            {
+                return NotFound("File not found");
+            }
             byte[] file = System.IO.File.ReadAllBytes(route);
 
             return File(file, "application/pdf", route);
+        }
+        catch (JournalNotFoundException)
+        {
+            return NotFound("Journal file not found");
         }
         catch (JournalServiceException)
         {
@@ -159,7 +163,7 @@ public class JournalController : ControllerBase
     {
         try
         {
-            if (journal.journalFile.Length == 0)
+            if (journal.journalFile == null || journal.journalFile.Length == 0)
             {
                 return BadRequest("Journal file cannot be empty.");
             }
@@ -187,17 +191,20 @@ public class JournalController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public IActionResult Put(Guid id, [FromForm] Journal journal)
+    public async Task<IActionResult> Put(Guid id, [FromForm] Journal journal)
     {
         try
         {
-            journalService.Update(id, journal);
-            return Ok();
-        }
-        catch (JournalNotFoundException ex)
-        {
-            _logger.LogError(ex, "Journal not found.");
-            return NotFound("Journal not found.");
+            bool updateResult = await journalService.Update(id, journal);
+            if (updateResult)
+            {
+                return Ok();
+            }
+            else
+            {
+                _logger.LogError("Journal not founded.");
+                return NotFound("Journal not found here.");
+            }
         }
         catch (JournalServiceException)
         {
@@ -219,17 +226,20 @@ public class JournalController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         try
         {
-            journalService.Delete(id);
-            return Ok();
-        }
-        catch (JournalNotFoundException ex)
-        {
-            _logger.LogError(ex, "Journal not found.");
-            return NotFound("Journal not found.");
+            bool deleteResult = await journalService.Delete(id);
+            if (deleteResult)
+            {
+                return Ok();
+            }
+            else
+            {
+                _logger.LogError("Journal not found.");
+                return NotFound("Journal not found.");
+            }
         }
         catch (JournalServiceException)
         {

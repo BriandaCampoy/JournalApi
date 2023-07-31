@@ -83,14 +83,14 @@ public class ReasearcherService : IReasearcherService
     /// </summary>
     /// <param name="id">The ID of the researcher to update.</param>
     /// <param name="researcher">The updated researcher data.</param>
-    public async Task Update(Guid id, Researcher researcher)
+    public async Task<bool> Update(Guid id, Researcher researcher)
     {
         try
         {
             var currentResearcher = context.Researchers.Find(id);
             if (currentResearcher == null)
             {
-                throw new ResearcherNotFoundException("Researcher not found");
+                return false;
             }
             else
             {
@@ -99,11 +99,8 @@ public class ReasearcherService : IReasearcherService
                 currentResearcher.Email = researcher.Email;
 
                 await context.SaveChangesAsync();
+                return true;
             }
-        }
-        catch (ResearcherNotFoundException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -115,24 +112,21 @@ public class ReasearcherService : IReasearcherService
     /// Deletes a specific researcher.
     /// </summary>
     /// <param name="id">The ID of the researcher to delete.</param>
-    public async Task Delete(Guid id)
+    public async Task<bool> Delete(Guid id)
     {
         try
         {
             var currentResearcher = context.Researchers.Find(id);
             if (currentResearcher == null)
             {
-                throw new ResearcherNotFoundException("Researcher not found");
+                return false;
             }
             else
             {
                 context.Researchers.Remove(currentResearcher);
                 await context.SaveChangesAsync();
+                return true;
             }
-        }
-        catch (ResearcherNotFoundException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -146,6 +140,6 @@ public interface IReasearcherService
     IEnumerable<Researcher> Get();
     Researcher GetOne(Guid researcherId);
     Task Create(Researcher researcher);
-    Task Update(Guid id, Researcher researcher);
-    Task Delete(Guid id);
+    Task<bool> Update(Guid id, Researcher researcher);
+    Task<bool> Delete(Guid id);
 }

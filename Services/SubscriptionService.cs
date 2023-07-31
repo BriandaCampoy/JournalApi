@@ -23,9 +23,9 @@ public class SubscriptionService : ISubscriptionService
     {
         try
         {
-            if (context.Journals.Find(id) == null)
+            if (context.Researchers.Find(id) == null)
             {
-                throw new SubscriptionNotFoundException("Researcher not found");
+                throw new ResearcherNotFoundException("Researcher not found");
             }
             var subscriptorsForResearcher = context.Subscriptions.Where<Subscription>(
                 subscription => subscription.FollowedResearcherId == id
@@ -37,7 +37,7 @@ public class SubscriptionService : ISubscriptionService
                 select researches;
             return researchers;
         }
-        catch (SubscriptionNotFoundException)
+        catch (ResearcherNotFoundException)
         {
             throw;
         }
@@ -56,15 +56,15 @@ public class SubscriptionService : ISubscriptionService
     {
         try
         {
-            if (context.Journals.Find(id) == null)
+            if (context.Researchers.Find(id) == null)
             {
-                throw new SubscriptionNotFoundException("Researcher not found");
+                throw new ResearcherNotFoundException("Researcher not found");
             }
             return context.Subscriptions.Where<Subscription>(
                 subscription => subscription.ResearcherId == id
             );
         }
-        catch (SubscriptionNotFoundException)
+        catch (ResearcherNotFoundException)
         {
             throw;
         }
@@ -83,9 +83,9 @@ public class SubscriptionService : ISubscriptionService
     {
         try
         {
-            if (context.Journals.Find(id) == null)
+            if (context.Researchers.Find(id) == null)
             {
-                throw new SubscriptionNotFoundException("Researcher not found");
+                throw new ResearcherNotFoundException("Researcher not found");
             }
             var result = context.Journals
                 .Where(
@@ -102,7 +102,7 @@ public class SubscriptionService : ISubscriptionService
 
             return result;
         }
-        catch (SubscriptionNotFoundException)
+        catch (ResearcherNotFoundException)
         {
             throw;
         }
@@ -136,7 +136,7 @@ public class SubscriptionService : ISubscriptionService
     /// Deletes a specific subscription.
     /// </summary>
     /// <param name="id">The subscription ID to delete.</param>
-    public async Task Delete(Guid id)
+    public async Task<bool> Delete(Guid id)
     {
         try
         {
@@ -144,17 +144,14 @@ public class SubscriptionService : ISubscriptionService
 
             if (currentSubscription == null)
             {
-                throw new SubscriptionNotFoundException("Researcher not found");
+                return false;
             }
             else
             {
                 context.Subscriptions.Remove(currentSubscription);
                 await context.SaveChangesAsync();
+                return true;
             }
-        }
-        catch (SubscriptionNotFoundException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -169,5 +166,5 @@ public interface ISubscriptionService
     IEnumerable<Subscription> GetSubscriptions(Guid id);
     IEnumerable<Journal> GetFeed(Guid id);
     Task<Subscription> Create(Subscription subscription);
-    Task Delete(Guid id);
+    Task<bool> Delete(Guid id);
 }

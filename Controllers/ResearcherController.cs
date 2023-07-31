@@ -123,17 +123,20 @@ public class ResearcherController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public IActionResult Put(Guid id, [FromBody] Researcher researcher)
+    public async Task<IActionResult> Put(Guid id, [FromBody] Researcher researcher)
     {
         try
         {
-            researcherService.Update(id, researcher);
-            return Ok();
-        }
-        catch (ResearcherNotFoundException ex)
-        {
-            _logger.LogError(ex, "Researcher not found.");
-            return NotFound("Researcher not found.");
+            bool updateResult = await researcherService.Update(id, researcher);
+            if (updateResult)
+            {
+                return Ok();
+            }
+            else
+            {
+                _logger.LogError("Researcher not found.");
+                return NotFound("Researcher not found.");
+            }
         }
         catch (ResearcherServiceException ex)
         {
@@ -151,17 +154,20 @@ public class ResearcherController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         try
         {
-            researcherService.Delete(id);
-            return Ok();
-        }
-        catch (ResearcherNotFoundException ex)
-        {
-            _logger.LogError(ex, "Researcher not found.");
-            return NotFound("Researcher not found.");
+            bool deleteResult = await researcherService.Delete(id);
+            if (deleteResult)
+            {
+                return Ok();
+            }
+            else
+            {
+                _logger.LogError("Researcher not found.");
+                return NotFound("Researcher not found.");
+            }
         }
         catch (ResearcherServiceException ex)
         {

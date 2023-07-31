@@ -76,7 +76,16 @@ public class JournalService : IJournalService
     {
         try
         {
+            var researcher = context.Researchers.Find(researcherId);
+            if (researcher == null)
+            {
+                throw new ResearcherNotFoundException("Researcher not found");
+            }
             return context.Journals.Where<Journal>(journal => journal.ResearcherId == researcherId);
+        }
+        catch (ResearcherNotFoundException)
+        {
+            throw;
         }
         catch (Exception)
         {
@@ -111,14 +120,14 @@ public class JournalService : IJournalService
     /// </summary>
     /// <param name="id">The ID of the journal to update.</param>
     /// <param name="journal">The updated journal information.</param>
-    public async Task Update(Guid id, Journal journal)
+    public async Task<bool> Update(Guid id, Journal journal)
     {
         try
         {
             var currentJournal = context.Journals.Find(id);
             if (currentJournal == null)
             {
-                throw new JournalNotFoundException("Journal not found");
+                return false;
             }
             else
             {
@@ -133,6 +142,7 @@ public class JournalService : IJournalService
                 }
 
                 await context.SaveChangesAsync();
+                return true;
             }
         }
         catch (JournalNotFoundException)
@@ -149,25 +159,22 @@ public class JournalService : IJournalService
     /// Deletes a journal by its ID.
     /// </summary>
     /// <param name="id">The ID of the journal to delete.</param>
-    public async Task Delete(Guid id)
+    public async Task<bool> Delete(Guid id)
     {
         try
         {
             var currentJournal = context.Journals.Find(id);
             if (currentJournal == null)
             {
-                throw new JournalNotFoundException("Journal not found");
+               return false;
             }
             else
             {
                 removeFile(currentJournal.InternalUrl);
                 context.Journals.Remove(currentJournal);
                 await context.SaveChangesAsync();
+                return true;
             }
-        }
-        catch (JournalNotFoundException)
-        {
-            throw;
         }
         catch (Exception)
         {
@@ -227,7 +234,7 @@ public interface IJournalService
 
     Task Create(Journal journal);
 
-    Task Update(Guid id, Journal journal);
+    Task<bool> Update(Guid id, Journal journal);
 
-    Task Delete(Guid id);
+    Task<bool> Delete(Guid id);
 }

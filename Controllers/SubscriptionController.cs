@@ -39,7 +39,7 @@ public class SubscriptionController : ControllerBase
         {
             return Ok(subscriptionService.GetSubscriptors(id));
         }
-        catch (SubscriptionNotFoundException ex)
+        catch (ResearcherNotFoundException ex)
         {
             _logger.LogError(ex, "Researcher not found.");
             return NotFound("Researcher not found.");
@@ -66,7 +66,7 @@ public class SubscriptionController : ControllerBase
         {
             return Ok(subscriptionService.GetSubscriptions(id));
         }
-        catch (SubscriptionNotFoundException ex)
+        catch (ResearcherNotFoundException ex)
         {
             _logger.LogError(ex, "Researcher not found.");
             return NotFound("Researcher not found.");
@@ -93,7 +93,7 @@ public class SubscriptionController : ControllerBase
         {
             return Ok(subscriptionService.GetFeed(id));
         }
-        catch (SubscriptionNotFoundException ex)
+        catch (ResearcherNotFoundException ex)
         {
             _logger.LogError(ex, "Researcher not found.");
             return NotFound("Researcher not found.");
@@ -142,17 +142,20 @@ public class SubscriptionController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         try
         {
-            subscriptionService.Delete(id);
-            return Ok();
-        }
-        catch (SubscriptionNotFoundException ex)
-        {
-            _logger.LogError(ex, "Researcher not found.");
-            return NotFound("Researcher not found.");
+            bool deleteResult = await subscriptionService.Delete(id);
+            if (deleteResult)
+            {
+                return Ok();
+            }
+            else
+            {
+                _logger.LogError("Subscription not found.");
+                return NotFound("Subscription not found.");
+            }
         }
         catch (SubscriptionServiceException ex)
         {
