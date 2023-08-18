@@ -1,7 +1,16 @@
 ﻿namespace journalapi.Services
 {
+
+    /// <summary>
+    /// Service for encrypting and decrypting strings using base64 encoding.
+    /// </summary>
     public class EncryptService
     {
+        /// <summary>
+        /// Encrypts a given string using base64 encoding.
+        /// </summary>
+        /// <param name="code">The string to encrypt.</param>
+        /// <returns>The base64-encoded encrypted string.</returns>
         public string Encrypt(string code)
         {
             byte[] encData_byte = new byte[code.Length];
@@ -9,6 +18,11 @@
             return Convert.ToBase64String(encData_byte);
         }
 
+        /// <summary>
+        /// Decrypts a given base64-encoded string.
+        /// </summary>
+        /// <param name="code">The base64-encoded string to decrypt.</param>
+        /// <returns>The decrypted string.</returns>
         public string Decrypt (string code)
         {
             System.Text.UTF8Encoding encoder = new System.Text.UTF8Encoding();

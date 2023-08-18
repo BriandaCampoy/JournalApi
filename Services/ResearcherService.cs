@@ -66,7 +66,14 @@ public class ReasearcherService : IReasearcherService
     /// <summary>
     /// Creates a new researcher.
     /// </summary>
-    /// <param name="researcher">The researcher to create.</param>
+    /// <param name="researcher">The researcher to be created.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The result contains:
+    /// - If successful: An IResult with a "201 Created" status code and the created researcher.
+    /// - If an error occurs: Throws a ResearcherServiceException with details about the error.
+    /// </returns>
+    /// <exception cref="ResearcherServiceException">Thrown when an error occurs while creating the researcher.</exception>
+
     public async Task<IResult> Create(Researcher researcher)
     {
         try
@@ -84,10 +91,17 @@ public class ReasearcherService : IReasearcherService
     }
 
     /// <summary>
-    /// Updates an existing researcher.
+    /// Updates an existing researcher's information.
     /// </summary>
-    /// <param name="id">The ID of the researcher to update.</param>
-    /// <param name="researcher">The updated researcher data.</param>
+    /// <param name="id">The unique identifier of the researcher to update.</param>
+    /// <param name="researcher">The updated information for the researcher.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The result contains:
+    /// - If the researcher is found and updated: An IResult with a "200 OK" status code.
+    /// - If the researcher is not found: An IResult with a "404 Not Found" status code.
+    /// - If an error occurs: Throws a ResearcherServiceException with details about the error.
+    /// </returns>
+    /// <exception cref="ResearcherServiceException">Thrown when an error occurs while updating the researcher.</exception>
     public async Task<IResult> Update(Guid id, Researcher researcher)
     {
         try
@@ -113,9 +127,16 @@ public class ReasearcherService : IReasearcherService
     }
 
     /// <summary>
-    /// Deletes a specific researcher.
+    /// Deletes an existing researcher by their unique identifier.
     /// </summary>
-    /// <param name="id">The ID of the researcher to delete.</param>
+    /// <param name="id">The unique identifier of the researcher to delete.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The result contains:
+    /// - If the researcher is found and deleted: An IResult with a "200 OK" status code.
+    /// - If the researcher is not found: An IResult with a "404 Not Found" status code.
+    /// - If an error occurs: Throws a ResearcherServiceException with details about the error.
+    /// </returns>
+    /// <exception cref="ResearcherServiceException">Thrown when an error occurs while deleting the researcher.</exception>
     public async Task<IResult> Delete(Guid id)
     {
         try

@@ -94,9 +94,15 @@ public class JournalService : IJournalService
     }
 
     /// <summary>
-    /// Creates a new journal.
+    /// Creates a new journal and stores it in the database.
     /// </summary>
-    /// <param name="journal">The journal information to create.</param>
+    /// <param name="journal">The journal object to create.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The result contains:
+    /// - If the journal is successfully created: An IResult with a "201 Created" status code and the created journal.
+    /// - If an error occurs while creating the journal: Throws a JournalServiceException with details about the error.
+    /// </returns>
+    /// <exception cref="JournalServiceException">Thrown when an error occurs while creating the journal.</exception>
     public async Task<IResult> Create(Journal journal)
     {
         try
@@ -117,10 +123,18 @@ public class JournalService : IJournalService
     }
 
     /// <summary>
-    /// Updates an existing journal.
+    /// Updates an existing journal in the database.
     /// </summary>
-    /// <param name="id">The ID of the journal to update.</param>
-    /// <param name="journal">The updated journal information.</param>
+    /// <param name="id">The unique identifier of the journal to update.</param>
+    /// <param name="journal">The updated journal object.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The result indicates:
+    /// - If the journal is successfully updated: True.
+    /// - If the journal does not exist: False.
+    /// - If an error occurs while updating the journal: Throws a JournalServiceException with details about the error.
+    /// </returns>
+    /// <exception cref="JournalNotFoundException">Thrown when the journal with the given ID is not found.</exception>
+    /// <exception cref="JournalServiceException">Thrown when an error occurs while updating the journal.</exception>
     public async Task<bool> Update(Guid id, Journal journal)
     {
         try
@@ -157,9 +171,16 @@ public class JournalService : IJournalService
     }
 
     /// <summary>
-    /// Deletes a journal by its ID.
+    /// Deletes an existing journal from the database.
     /// </summary>
-    /// <param name="id">The ID of the journal to delete.</param>
+    /// <param name="id">The unique identifier of the journal to delete.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The result indicates:
+    /// - If the journal is successfully deleted: True.
+    /// - If the journal does not exist: False.
+    /// - If an error occurs while deleting the journal: Throws a JournalServiceException with details about the error.
+    /// </returns>
+    /// <exception cref="JournalServiceException">Thrown when an error occurs while deleting the journal.</exception>
     public async Task<bool> Delete(Guid id)
     {
         try
