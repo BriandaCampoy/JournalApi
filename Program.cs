@@ -2,12 +2,44 @@ using Microsoft.OpenApi.Models;
 using journalapi;
 using journalapi.Services;
 using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.OData;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+using journalApi.Models;
+using journalApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Configuration.AddJsonFile("appsettings.json");
+var secretkey = builder.Configuration.GetSection("settings").GetSection("secretkey").ToString();
+var keyBytes = Encoding.UTF8.GetBytes(secretkey);
+
+builder.Services.AddAuthentication(config =>
+{
+    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(config =>
+{
+    config.RequireHttpsMetadata = false;
+    config.SaveToken = true;
+    config.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
+
+builder.Services.AddControllers().AddOData((options) => 
+    options.Select().Filter().Count().OrderBy().Expand()
+    .AddRouteComponents("odata", GetEdmModel()));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -32,7 +64,7 @@ builder.Services.AddSqlServer<JournalContext>(
     builder.Configuration.GetConnectionString("cnJournal")
 );
 
-// Add the services to the DI container.
+// Add the services to the DI container
 builder.Services.AddScoped<IJournalService, JournalService>();
 builder.Services.AddScoped<IReasearcherService, ReasearcherService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
@@ -64,6 +96,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 // Map controllers to the endpoints.
@@ -71,3 +105,10 @@ app.MapControllers();
 
 // Run the application.
 app.Run();
+
+static IEdmModel GetEdmModel()
+{
+    ODataConventionModelBuilder modelBuilder = new ODataConventionModelBuilder();
+    modelBuilder.EntitySet<University>("UniversityOData");
+    return modelBuilder.GetEdmModel();
+}

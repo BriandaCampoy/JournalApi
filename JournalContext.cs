@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using journalapi.Models;
+using journalApi.Models;
+using Microsoft.Identity.Client;
 
 namespace journalapi;
 
@@ -8,6 +10,11 @@ namespace journalapi;
 /// </summary>
 public class JournalContext : DbContext
 {
+    /// <summary>
+    /// Gets or sets the DbSet for universities.
+    /// </summary>
+    public DbSet<University> Universities { get; set; }
+
     /// <summary>
     /// Gets or sets the DbSet for researchers.
     /// </summary>
@@ -36,6 +43,15 @@ public class JournalContext : DbContext
     /// <param name="modelBuilder">The builder used to construct the model for the context.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<University>(university =>
+        {
+            university.ToTable("University");
+            university.HasKey(p => p.UniversityId);
+            university.Property(p=>p.nameUniversity).IsRequired();
+            university.Property(p => p.city);
+        });
+
         modelBuilder.Entity<Researcher>(researcher =>
         {
             researcher.ToTable("Researcher");
@@ -76,5 +92,6 @@ public class JournalContext : DbContext
                 .OnDelete(DeleteBehavior.NoAction);
             ;
         });
+
     }
 }
