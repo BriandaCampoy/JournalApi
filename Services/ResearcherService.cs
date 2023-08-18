@@ -1,5 +1,4 @@
 using journalapi.Models;
-using journalApi.Services;
 
 namespace journalapi.Services;
 
@@ -10,13 +9,16 @@ public class ReasearcherService : IReasearcherService
 {
     protected readonly JournalContext context;
 
+    protected readonly EncryptService encryptService;
+
     /// <summary>
     /// Initializes a new instance of the ReasearcherService class.
     /// </summary>
     /// <param name="dbcontext">The JournalContext instance.</param>
-    public ReasearcherService(JournalContext dbcontext)
+    public ReasearcherService(JournalContext dbcontext, EncryptService encryptService)
     {
         context = dbcontext;
+        this.encryptService = encryptService;
     }
 
     /// <summary>
@@ -70,11 +72,7 @@ public class ReasearcherService : IReasearcherService
         try
         {
             researcher.ResearcherId = Guid.NewGuid();
-
-            byte[] encData_byte = new byte[researcher.Password.Length];
-            encData_byte = System.Text.Encoding.UTF8.GetBytes(researcher.Password);
-            researcher.Password = Convert.ToBase64String(encData_byte);
-
+            researcher.Password = encryptService.Encrypt(researcher.Password);
             context.Researchers.Add(researcher);
             await context.SaveChangesAsync();
             return Results.Created("Created", researcher);
@@ -90,23 +88,22 @@ public class ReasearcherService : IReasearcherService
     /// </summary>
     /// <param name="id">The ID of the researcher to update.</param>
     /// <param name="researcher">The updated researcher data.</param>
-    public async Task<bool> Update(Guid id, Researcher researcher)
+    public async Task<IResult> Update(Guid id, Researcher researcher)
     {
         try
         {
             var currentResearcher = context.Researchers.Find(id);
             if (currentResearcher == null)
             {
-                return false;
+                return Results.NotFound();
             }
             else
             {
                 currentResearcher.Name = researcher.Name;
-                currentResearcher.Password = researcher.Password;
-                currentResearcher.Email = researcher.Email;
+                currentResearcher.Password = encryptService.Encrypt(researcher.Password);
 
                 await context.SaveChangesAsync();
-                return true;
+                return Results.Ok();
             }
         }
         catch (Exception ex)
@@ -119,20 +116,20 @@ public class ReasearcherService : IReasearcherService
     /// Deletes a specific researcher.
     /// </summary>
     /// <param name="id">The ID of the researcher to delete.</param>
-    public async Task<bool> Delete(Guid id)
+    public async Task<IResult> Delete(Guid id)
     {
         try
         {
             var currentResearcher = context.Researchers.Find(id);
             if (currentResearcher == null)
             {
-                return false;
+                return Results.NotFound();
             }
             else
             {
                 context.Researchers.Remove(currentResearcher);
                 await context.SaveChangesAsync();
-                return true;
+                return Results.Ok();
             }
         }
         catch (Exception ex)
@@ -140,6 +137,7 @@ public class ReasearcherService : IReasearcherService
             throw new ResearcherServiceException("Error while deleting researcher", ex);
         }
     }
+
 }
 
 public interface IReasearcherService
@@ -147,6 +145,8 @@ public interface IReasearcherService
     IEnumerable<Researcher> Get();
     Researcher GetOne(Guid researcherId);
     Task<IResult> Create(Researcher researcher);
-    Task<bool> Update(Guid id, Researcher researcher);
-    Task<bool> Delete(Guid id);
+    Task<IResult> Update(Guid id, Researcher researcher);
+    Task<IResult> Delete(Guid id);
 }
+
+

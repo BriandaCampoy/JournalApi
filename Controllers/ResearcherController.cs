@@ -132,16 +132,21 @@ public class ResearcherController : ControllerBase
     {
         try
         {
-            bool updateResult = await researcherService.Update(id, researcher);
-            if (updateResult)
+            IResult updateResult = await researcherService.Update(id, researcher);
+            if (updateResult == Results.Ok())
             {
-                return Ok();
+                return Ok(updateResult);
             }
-            else
+            else if (updateResult == Results.NotFound())
             {
                 _logger.LogError("Researcher not found.");
                 return NotFound("Researcher not found.");
             }
+            else
+            {
+                return BadRequest();
+            }
+
         }
         catch (ResearcherServiceException ex)
         {
@@ -163,15 +168,18 @@ public class ResearcherController : ControllerBase
     {
         try
         {
-            bool deleteResult = await researcherService.Delete(id);
-            if (deleteResult)
+            IResult deleteResult = await researcherService.Delete(id);
+            if(deleteResult == Results.Ok())
             {
-                return Ok();
-            }
-            else
+                return Ok(deleteResult);
+            } else if (deleteResult == Results.NotFound())
             {
                 _logger.LogError("Researcher not found.");
                 return NotFound("Researcher not found.");
+            }
+            else
+            {
+                return BadRequest();
             }
         }
         catch (ResearcherServiceException ex)

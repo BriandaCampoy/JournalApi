@@ -1,6 +1,5 @@
 using Microsoft.OpenApi.Models;
 using journalapi;
-using journalapi.Services;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -9,7 +8,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using journalApi.Models;
-using journalApi.Services;
+using journalapi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +64,7 @@ builder.Services.AddSqlServer<JournalContext>(
 );
 
 // Add the services to the DI container
+builder.Services.AddSingleton<EncryptService>();
 builder.Services.AddScoped<IJournalService, JournalService>();
 builder.Services.AddScoped<IReasearcherService, ReasearcherService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
