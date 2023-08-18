@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using journalapi.Models;
 using journalapi.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace journalapi.Controllers;
 
@@ -9,6 +10,7 @@ namespace journalapi.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class JournalController : ControllerBase
 {
     private readonly ILogger<JournalController> _logger;
@@ -159,7 +161,7 @@ public class JournalController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public IActionResult Post([FromForm] Journal journal)
+    public async Task<IActionResult>Post([FromForm] Journal journal)
     {
         try
         {
@@ -167,8 +169,8 @@ public class JournalController : ControllerBase
             {
                 return BadRequest("Journal file cannot be empty.");
             }
-            journalService.Create(journal);
-            return Ok();
+            var result = await journalService.Create(journal);
+            return Ok(result);
         }
         catch (JournalServiceException)
         {

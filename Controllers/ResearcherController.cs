@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using journalapi.Models;
 using journalapi.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace journalapi.Controllers;
 
@@ -9,6 +11,7 @@ namespace journalapi.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ResearcherController : ControllerBase
 {
     IReasearcherService researcherService;
@@ -42,6 +45,30 @@ public class ResearcherController : ControllerBase
     {
         context.Database.EnsureCreated();
         return Ok();
+    }
+
+
+    /// <summary>
+    /// Deletes researchers who do not have associated journals.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint triggers a stored procedure named "DeleteResearchersWithoutJournals" to remove researchers who do not have any journals associated with them.
+    /// </remarks>
+    /// <returns>Status code indicating the result of the operation.</returns>
+    [HttpDelete]
+    [Route("cleanResearchers")]
+    public IActionResult DeleteEmptyResearchers()
+    {
+        try
+        {
+        context.Database.ExecuteSqlRaw("EXEC DeleteResearchersWithoutJournals");
+        return Ok();
+
+        }catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while deleting empty researchers.");
+            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting empty researchers.");
+        }
     }
 
     /// <summary>
@@ -88,28 +115,6 @@ public class ResearcherController : ControllerBase
         {
             _logger.LogError(ex, "Error while getting researcher.");
             return StatusCode(500, "An error occurred while getting researcher.");
-        }
-    }
-
-    /// <summary>
-    /// Creates a new researcher.
-    /// </summary>
-    /// <param name="researcher">The researcher to create.</param>
-    /// <returns>200 OK if successful.</returns>
-    [HttpPost]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(500)]
-    public IActionResult Post([FromBody] Researcher researcher)
-    {
-        try
-        {
-            researcherService.Create(researcher);
-            return Ok();
-        }
-        catch (ResearcherServiceException ex)
-        {
-            _logger.LogError(ex, "Error while creating researcher.");
-            return StatusCode(500, "An error occurred while creating researcher.");
         }
     }
 

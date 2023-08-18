@@ -1,4 +1,5 @@
 using journalapi.Models;
+using journalApi.Services;
 
 namespace journalapi.Services;
 
@@ -64,13 +65,19 @@ public class ReasearcherService : IReasearcherService
     /// Creates a new researcher.
     /// </summary>
     /// <param name="researcher">The researcher to create.</param>
-    public async Task Create(Researcher researcher)
+    public async Task<IResult> Create(Researcher researcher)
     {
         try
         {
             researcher.ResearcherId = Guid.NewGuid();
+
+            byte[] encData_byte = new byte[researcher.Password.Length];
+            encData_byte = System.Text.Encoding.UTF8.GetBytes(researcher.Password);
+            researcher.Password = Convert.ToBase64String(encData_byte);
+
             context.Researchers.Add(researcher);
             await context.SaveChangesAsync();
+            return Results.Created("Created", researcher);
         }
         catch (Exception ex)
         {
@@ -139,7 +146,7 @@ public interface IReasearcherService
 {
     IEnumerable<Researcher> Get();
     Researcher GetOne(Guid researcherId);
-    Task Create(Researcher researcher);
+    Task<IResult> Create(Researcher researcher);
     Task<bool> Update(Guid id, Researcher researcher);
     Task<bool> Delete(Guid id);
 }

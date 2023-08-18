@@ -97,7 +97,7 @@ public class JournalService : IJournalService
     /// Creates a new journal.
     /// </summary>
     /// <param name="journal">The journal information to create.</param>
-    public async Task Create(Journal journal)
+    public async Task<IResult> Create(Journal journal)
     {
         try
         {
@@ -108,6 +108,7 @@ public class JournalService : IJournalService
             journal.PublishedDate = DateTime.Now;
             context.Journals.Add(journal);
             await context.SaveChangesAsync();
+                return Results.Created("created", journal);
         }
         catch (Exception)
         {
@@ -232,7 +233,7 @@ public interface IJournalService
     Journal GetOne(Guid journalId);
     IEnumerable<Journal> GetByResearcher(Guid researcherId);
 
-    Task Create(Journal journal);
+    Task<IResult> Create(Journal journal);
 
     Task<bool> Update(Guid id, Journal journal);
 
